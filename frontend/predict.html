@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CD-RPS | Risk Prediction</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *{box-sizing:border-box}
+    body{background:#0f1117;color:#e0e0e0;font-family:'Segoe UI',sans-serif;margin:0}
+    .navbar{background:#1a1d27;border-bottom:1px solid #2a2d3e;padding:14px 24px;display:flex;align-items:center}
+    .navbar-brand{font-weight:800;font-size:20px;color:#12c2e9;flex:1}
+    .nav-patient{font-size:13px;color:#a0a0b0;margin-right:16px}
+    .btn-nav{background:transparent;border:1px solid #2a2d3e;color:#a0a0b0;border-radius:8px;padding:6px 16px;font-size:13px;cursor:pointer;margin-left:8px}
+    .btn-nav:hover{border-color:#12c2e9;color:#12c2e9}
+    .card{background:#1a1d27;border:1px solid #2a2d3e;border-radius:14px;padding:28px;margin-bottom:20px}
+    .section-title{font-size:11px;font-weight:700;color:#12c2e9;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:16px}
+    .card-heading{font-size:18px;font-weight:700;color:#fff;margin-bottom:6px}
+    .form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+    .form-group label{display:block;font-size:12px;color:#a0a0b0;margin-bottom:6px;font-weight:500}
+    .form-group input{width:100%;background:#0f1117;border:1px solid #2a2d3e;color:#e0e0e0;border-radius:8px;padding:10px 14px;font-size:14px;outline:none}
+    .form-group input:focus{border-color:#12c2e9}
+    .hint{font-size:11px;color:#444;margin-top:4px}
+    .btn-predict{width:100%;background:linear-gradient(135deg,#12c2e9,#c471ed);border:none;border-radius:10px;color:#fff;font-weight:700;font-size:16px;padding:14px;cursor:pointer;margin-top:8px}
+    .btn-predict:hover{opacity:.9}
+    .btn-predict:disabled{opacity:.6;cursor:not-allowed}
+    .disease-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px;margin-bottom:20px}
+    .dc{background:#0f1117;border-radius:12px;padding:18px;border:1px solid #2a2d3e;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;position:relative}
+    .dc:hover{border-color:#12c2e9;transform:translateY(-3px);box-shadow:0 8px 24px rgba(18,194,233,.12)}
+    .dc.high{border-left:4px solid #e74c3c}
+    .dc.low{border-left:4px solid #2ecc71}
+    .dc.high:hover{border-color:#e74c3c;box-shadow:0 8px 24px rgba(231,76,60,.15)}
+    .dc.low:hover{border-color:#2ecc71;box-shadow:0 8px 24px rgba(46,204,113,.12)}
+    .dc-name{font-size:13px;font-weight:600;color:#a0a0b0;margin-bottom:10px}
+    .dc-score{font-size:34px;font-weight:800;line-height:1}
+    .dc-score.high{color:#e74c3c}.dc-score.low{color:#2ecc71}
+    .dc-label{font-size:12px;font-weight:600;margin-top:4px}
+    .dc-label.high{color:#e74c3c}.dc-label.low{color:#2ecc71}
+    .dc-bar-bg{background:#2a2d3e;border-radius:4px;height:5px;margin-top:10px}
+    .dc-bar{height:5px;border-radius:4px}
+    .dc-bar.high{background:linear-gradient(90deg,#c0392b,#e74c3c)}
+    .dc-bar.low{background:linear-gradient(90deg,#1a7a45,#2ecc71)}
+    .dc-hint{font-size:10px;color:#333;margin-top:8px}
+
+    /* ── Hover tooltip ── */
+    .dc-tooltip{
+      display:none;position:absolute;z-index:100;
+      bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);
+      background:#12151f;border:1px solid #2a2d3e;border-radius:12px;
+      padding:14px 16px;width:230px;pointer-events:none;
+      box-shadow:0 8px 32px rgba(0,0,0,.6);
+      animation:fadeUp .15s ease;
+    }
+    .dc-tooltip::after{
+      content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);
+      border:6px solid transparent;border-top-color:#2a2d3e;
+    }
+    .dc:hover .dc-tooltip{display:block}
+    @keyframes fadeUp{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    .tt-row{display:flex;justify-content:space-between;align-items:center;font-size:12px;padding:3px 0;border-bottom:1px solid #1e2130}
+    .tt-row:last-child{border-bottom:none}
+    .tt-key{color:#666}.tt-val{font-weight:600}
+    .summary-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+    .pill{padding:7px 16px;border-radius:20px;font-size:12px;font-weight:600}
+    .pill-high{background:rgba(231,76,60,.15);color:#e74c3c;border:1px solid rgba(231,76,60,.3)}
+    .pill-low{background:rgba(46,204,113,.12);color:#2ecc71;border:1px solid rgba(46,204,113,.3)}
+    .pill-info{background:rgba(18,194,233,.10);color:#12c2e9;border:1px solid rgba(18,194,233,.3)}
+    .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:999;align-items:center;justify-content:center;padding:20px}
+    .modal-overlay.open{display:flex}
+    .modal-box{background:#1a1d27;border:1px solid #2a2d3e;border-radius:16px;width:100%;max-width:780px;max-height:92vh;overflow-y:auto;padding:28px}
+    .modal-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px}
+    .modal-close{background:transparent;border:none;color:#666;font-size:22px;cursor:pointer;line-height:1;padding:0}
+    .modal-close:hover{color:#fff}
+    .ref-table{width:100%;border-collapse:collapse;font-size:13px}
+    .ref-table th{color:#a0a0b0;font-weight:500;text-align:left;padding:8px 12px;border-bottom:1px solid #2a2d3e}
+    .ref-table td{padding:9px 12px;border-bottom:1px solid #1a1d27;color:#e0e0e0}
+    .ref-table tr:last-child td{border-bottom:none}
+    .val-high{color:#e74c3c;font-weight:600}.val-ok{color:#2ecc71;font-weight:600}
+    .rec-box{background:#0f1117;border-left:3px solid #12c2e9;border-radius:0 8px 8px 0;padding:14px 16px;font-size:13px;color:#b0b0c0;line-height:1.9;margin-top:16px}
+    .hist-session{background:#0f1117;border:1px solid #2a2d3e;border-radius:12px;margin-bottom:12px;overflow:hidden}
+    .hist-hdr{padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center}
+    .hist-hdr:hover{background:#141720}
+    .hist-body{display:none;padding:0 18px 16px}
+    .hist-body.open{display:block}
+    .hist-item{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #1e2130;font-size:13px}
+    .hist-item:last-child{border-bottom:none}
+    .btn-detail{background:transparent;border:1px solid #2a2d3e;color:#a0a0b0;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer}
+    .btn-detail:hover{border-color:#12c2e9;color:#12c2e9}
+    .error-box{background:#2a1a1a;border:1px solid #c0392b;color:#e74c3c;border-radius:8px;padding:12px 16px;font-size:13px;margin-bottom:12px}
+    .spinner{display:inline-block;width:16px;height:16px;border:2px solid #444;border-top-color:#12c2e9;border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:8px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-out{background:transparent;border:1px solid #2a2d3e;color:#a0a0b0;border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer}
+    .btn-out:hover{border-color:#12c2e9;color:#12c2e9}
+    .vcard{background:#0f1117;border:1px solid #2a2d3e;border-radius:10px;padding:12px 18px;min-width:130px}
+    .vcard-label{font-size:11px;color:#444;margin-bottom:4px}
+    .vcard-val{font-size:16px;font-weight:700}
+  </style>
+</head>
+<body>
+
+<div class="navbar">
+  <div class="navbar-brand">CD-RPS</div>
+  <span class="nav-patient" id="patientName"></span>
+  <button class="btn-nav" onclick="showPanel('historyPanel')">History</button>
+  <button class="btn-nav" onclick="logout()">Logout</button>
+</div>
+
+<div style="max-width:1100px;margin:0 auto;padding:24px 16px">
+
+  <!-- FORM -->
+  <div id="formPanel">
+    <div class="card">
+      <div class="card-heading">Patient Vitals Input</div>
+      <div style="font-size:13px;color:#555;margin-bottom:22px">Enter clinical parameters below. The system will run all 9 disease risk models simultaneously.</div>
+
+      <div class="section-title">Personal Information</div>
+      <div class="form-grid" style="margin-bottom:20px">
+        <div class="form-group">
+          <label>Age (years) *</label>
+          <input type="number" id="age" placeholder="e.g. 45" min="1" max="120"/>
+          <div class="hint">Required</div>
+        </div>
+        <div class="form-group">
+          <label>Pregnancies</label>
+          <input type="number" id="pregnancies" placeholder="0" min="0" max="20" value="0"/>
+          <div class="hint">Enter 0 if male or not applicable</div>
+        </div>
+        <div class="form-group">
+          <label>Diabetes Pedigree Function</label>
+          <input type="number" id="dpf" placeholder="e.g. 0.5" step="0.01" min="0" max="3"/>
+          <div class="hint">Family history score (0 – 2.5)</div>
+        </div>
+      </div>
+
+      <div class="section-title">Clinical Parameters</div>
+      <div class="form-grid" style="margin-bottom:24px">
+        <div class="form-group">
+          <label>BMI (kg/m²) *</label>
+          <input type="number" id="bmi" placeholder="e.g. 28.5" step="0.1"/>
+          <div class="hint">Normal: 18.5 – 24.9</div>
+        </div>
+        <div class="form-group">
+          <label>Glucose Level (mg/dL) *</label>
+          <input type="number" id="glucose" placeholder="e.g. 110" step="0.1"/>
+          <div class="hint">Normal fasting: 70 – 100</div>
+        </div>
+        <div class="form-group">
+          <label>Systolic BP (mmHg) *</label>
+          <input type="number" id="systolicBp" placeholder="e.g. 120"/>
+          <div class="hint">Normal: below 120</div>
+        </div>
+        <div class="form-group">
+          <label>Diastolic BP (mmHg)</label>
+          <input type="number" id="diastolicBp" placeholder="e.g. 80"/>
+          <div class="hint">Normal: below 80</div>
+        </div>
+        <div class="form-group">
+          <label>Cholesterol (mg/dL)</label>
+          <input type="number" id="cholesterol" placeholder="e.g. 190" step="0.1"/>
+          <div class="hint">Normal: below 200</div>
+        </div>
+        <div class="form-group">
+          <label>Insulin Level (µU/mL)</label>
+          <input type="number" id="insulin" placeholder="e.g. 80" step="0.1"/>
+          <div class="hint">Normal fasting: 2 – 25</div>
+        </div>
+        <div class="form-group">
+          <label>Skin Thickness (mm)</label>
+          <input type="number" id="skinThickness" placeholder="e.g. 20" step="0.1"/>
+          <div class="hint">Triceps skinfold</div>
+        </div>
+      </div>
+
+      <div id="formErr"></div>
+      <button class="btn-predict" id="predictBtn" onclick="doPredict()">Analyse All 9 Diseases</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="resultsPanel" style="display:none">
+    <div class="summary-bar" id="summaryBar"></div>
+    <div class="card" id="vitalsCard"></div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;padding:0 2px">
+      <div class="card-heading" style="margin:0">Risk Assessment — All 9 Diseases</div>
+      <div style="font-size:12px;color:#444">Click any card for full detail</div>
+    </div>
+    <div class="disease-grid" id="diseaseGrid"></div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px">
+      <button class="btn-out" onclick="showPanel('formPanel')">New Prediction</button>
+      <button class="btn-out" onclick="showPanel('historyPanel')">View History</button>
+      <button class="btn-out" onclick="window.print()">Print Report</button>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div id="historyPanel" style="display:none">
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div class="card-heading" style="margin:0">Prediction History</div>
+        <button class="btn-out" onclick="showPanel('formPanel')">Back</button>
+      </div>
+      <div id="historyContent"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- DETAIL MODAL -->
+<div class="modal-overlay" id="detailModal" onclick="bgClose(event)">
+  <div class="modal-box" id="detailBox"></div>
+</div>
+
+<script>
+const API = '';
+const patient = JSON.parse(sessionStorage.getItem('patient') || 'null');
+if (!patient) { window.location.href = '/'; }
+document.getElementById('patientName').textContent = 'Welcome, ' + patient.name;
+
+const REFS = [
+  {key:'bmi',         label:'BMI',         unit:'kg/m²', range:'18.5–24.9', low:18.5, high:24.9},
+  {key:'glucose',     label:'Glucose',      unit:'mg/dL', range:'70–100',    low:70,   high:100},
+  {key:'systolic_bp', label:'Systolic BP',  unit:'mmHg',  range:'< 120',     low:0,    high:120},
+  {key:'diastolic_bp',label:'Diastolic BP', unit:'mmHg',  range:'< 80',      low:0,    high:80},
+  {key:'cholesterol', label:'Cholesterol',  unit:'mg/dL', range:'< 200',     low:0,    high:200},
+  {key:'insulin',     label:'Insulin',      unit:'µU/mL', range:'2–25',      low:2,    high:25},
+];
+
+let lastVitals = {}, lastResults = [];
+
+function showPanel(name) {
+  ['formPanel','resultsPanel','historyPanel'].forEach(id =>
+    document.getElementById(id).style.display = id===name ? '' : 'none');
+  if (name === 'historyPanel') loadHistory();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+async function doPredict() {
+  document.getElementById('formErr').innerHTML = '';
+  const bmi    = parseFloat(document.getElementById('bmi').value);
+  const glucose= parseFloat(document.getElementById('glucose').value);
+  const sysBP  = parseFloat(document.getElementById('systolicBp').value);
+  const diaBP  = parseFloat(document.getElementById('diastolicBp').value) || 80;
+  const chol   = parseFloat(document.getElementById('cholesterol').value) || 200;
+  const insulin= parseFloat(document.getElementById('insulin').value) || 79;
+  const skin   = parseFloat(document.getElementById('skinThickness').value) || 20;
+  const preg   = parseInt(document.getElementById('pregnancies').value) || 0;
+  const age    = parseFloat(document.getElementById('age').value);
+  const dpf    = parseFloat(document.getElementById('dpf').value) || 0.5;
+
+  if (!bmi || !glucose || !sysBP || !age) {
+    document.getElementById('formErr').innerHTML =
+      '<div class="error-box">Please fill in Age, BMI, Glucose Level, and Systolic BP at minimum.</div>';
+    return;
+  }
+
+  const btn = document.getElementById('predictBtn');
+  btn.innerHTML = '<span class="spinner"></span>Analysing 9 diseases...';
+  btn.disabled  = true;
+
+  try {
+    const res  = await fetch(`${API}/api/predict_all`, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({patient_id:patient.patient_id,
+        bmi,glucose,systolic_bp:sysBP,diastolic_bp:diaBP,
+        cholesterol:chol,insulin,skin_thickness:skin,
+        pregnancies:preg,age,diabetes_pedigree:dpf})
+    });
+    const data = await res.json();
+    if (data.success) {
+      lastVitals = data.vitals; lastResults = data.results;
+      renderResults(data); showPanel('resultsPanel');
+    } else {
+      document.getElementById('formErr').innerHTML =
+        `<div class="error-box">${data.message}</div>`;
+    }
+  } catch(e) {
+    document.getElementById('formErr').innerHTML =
+      '<div class="error-box">Cannot connect to server. Make sure Flask is running on port 5000.</div>';
+  }
+  btn.innerHTML = 'Analyse All 9 Diseases'; btn.disabled = false;
+}
+
+function renderResults(data) {
+  const R = data.results, V = data.vitals;
+  const highCount = R.filter(r=>r.classification==='High Risk').length;
+  const ageVal = document.getElementById('age').value;
+
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="pill pill-info">${patient.name} | Age ${ageVal}</div>
+    <div class="pill pill-high">${highCount} High Risk</div>
+    <div class="pill pill-low">${R.length-highCount} Low Risk</div>
+    <div class="pill pill-info">9 Diseases Analysed</div>`;
+
+  document.getElementById('vitalsCard').innerHTML = `
+    <div class="section-title">Input Vitals Summary</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      ${[['BMI',V.bmi+' kg/m²',V.bmi>24.9],['Glucose',V.glucose+' mg/dL',V.glucose>100],
+         ['Systolic BP',V.systolic_bp+' mmHg',V.systolic_bp>120],
+         ['Diastolic BP',V.diastolic_bp+' mmHg',V.diastolic_bp>80],
+         ['Cholesterol',V.cholesterol+' mg/dL',V.cholesterol>200],
+         ['Insulin',V.insulin+' µU/mL',V.insulin>25||V.insulin<2]
+        ].map(([l,v,bad])=>`<div class="vcard">
+          <div class="vcard-label">${l}</div>
+          <div class="vcard-val ${bad?'val-high':'val-ok'}">${v}</div>
+        </div>`).join('')}
+    </div>`;
+  const REFS_TOOLTIP = [
+    {key:'bmi',         label:'BMI',         unit:'kg/m²', high:24.9},
+    {key:'glucose',     label:'Glucose',      unit:'mg/dL', high:100},
+    {key:'systolic_bp', label:'Systolic BP',  unit:'mmHg',  high:120},
+    {key:'cholesterol', label:'Cholesterol',  unit:'mg/dL', high:200},
+    {key:'insulin',     label:'Insulin',      unit:'µU/mL', high:25},
+  ];
+
+  document.getElementById('diseaseGrid').innerHTML = R.map((r,i)=>{
+    const isHigh = r.classification==='High Risk';
+    const sc = isHigh ? '#e74c3c' : '#2ecc71';
+
+    // Build tooltip rows — top risk factors for this disease
+    const tooltipRows = REFS_TOOLTIP.map(ref => {
+      const v   = V[ref.key];
+      const bad = typeof v==='number' && !isNaN(v) && v > ref.high;
+      return `<div class="tt-row">
+        <span class="tt-key">${ref.label}</span>
+        <span class="tt-val" style="color:${bad?'#e74c3c':'#2ecc71'}">${v} ${ref.unit}</span>
+      </div>`;
+    }).join('');
+
+    // Short recommendation preview (first sentence only)
+    const recPreview = r.recommendations.split('.')[0] + '.';
+
+    return `<div class="dc ${isHigh?'high':'low'}" onclick="openDetail(${i})">
+
+      <!-- Hover tooltip -->
+      <div class="dc-tooltip">
+        <div style="font-size:11px;font-weight:700;color:#12c2e9;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px">${r.disease_name}</div>
+        ${tooltipRows}
+        <div style="margin-top:10px;font-size:11px;color:#666;line-height:1.5">${recPreview}</div>
+        <div style="margin-top:8px;font-size:10px;color:#444;text-align:right">Click to open full detail</div>
+      </div>
+
+      <div class="dc-name">${r.disease_name}</div>
+      <div class="dc-score ${isHigh?'high':'low'}">${r.risk_score}<span style="font-size:15px;font-weight:400">%</span></div>
+      <div class="dc-label ${isHigh?'high':'low'}">${isHigh?'▲ High Risk':'✓ Low Risk'}</div>
+      <div class="dc-bar-bg"><div class="dc-bar ${isHigh?'high':'low'}" style="width:${Math.min(r.risk_score,100)}%"></div></div>
+      <div class="dc-hint">Hover for preview &nbsp;·&nbsp; Click for full detail →</div>
+    </div>`;
+  }).join('');
+}
+
+// ── Disease-specific detailed suggestions ────────────────────
+const DISEASE_SUGGESTIONS = {
+  1: { // Type 2 Diabetes
+    lifestyle: ['Walk 30–45 minutes daily after meals','Reduce refined carbohydrates and sugar','Eat smaller, more frequent meals','Monitor blood glucose regularly at home'],
+    diet:      ['Increase intake of leafy greens, legumes, and whole grains','Avoid sugary drinks and processed foods','Choose low glycaemic index foods','Limit white rice, bread, and potatoes'],
+    medical:   ['Get HbA1c tested every 3–6 months','Consult an endocrinologist if glucose >200 mg/dL','Get annual eye and kidney function checkups','Check feet daily for wounds or infections'],
+    urgency:   'Schedule a consultation within 2 weeks'
+  },
+  2: { // Cardiovascular Disease
+    lifestyle: ['Engage in moderate aerobic exercise 5 days/week','Quit smoking immediately','Manage stress with yoga or meditation','Maintain a healthy body weight'],
+    diet:      ['Follow a heart-healthy Mediterranean diet','Limit saturated fat and trans fats','Eat more oily fish (salmon, sardines) twice a week','Reduce sodium to less than 2g/day'],
+    medical:   ['Get an ECG and echocardiogram done','Monitor blood pressure twice daily','Take prescribed blood thinners as directed','Check lipid panel every 6 months'],
+    urgency:   'See a cardiologist within 1 week'
+  },
+  3: { // Chronic Kidney Disease
+    lifestyle: ['Avoid NSAIDs like ibuprofen','Stay well hydrated — drink 8–10 glasses of water/day','Avoid smoking and limit alcohol','Exercise moderately — avoid extreme physical strain'],
+    diet:      ['Limit potassium-rich foods if advised (bananas, oranges)','Reduce phosphorus intake (avoid cola drinks)','Control protein intake as per doctor advice','Reduce sodium to prevent fluid retention'],
+    medical:   ['Get serum creatinine and eGFR tested regularly','Monitor blood pressure strictly (target <130/80)','Get urine protein test every 3 months','Consult a nephrologist immediately if eGFR <60'],
+    urgency:   'Consult a nephrologist within 1 week'
+  },
+  4: { // Stroke
+    lifestyle: ['Control blood pressure strictly every day','Stop smoking and avoid secondhand smoke','Limit alcohol to one drink/day maximum','Maintain healthy weight — obesity doubles stroke risk'],
+    diet:      ['Follow the DASH diet for blood pressure control','Increase potassium through fruits and vegetables','Reduce sodium aggressively','Eat antioxidant-rich foods: berries, spinach, nuts'],
+    medical:   ['Know stroke warning signs: FAST (Face, Arms, Speech, Time)','Get a carotid artery ultrasound done','Take prescribed anticoagulants regularly','Check cholesterol and blood sugar every 6 months'],
+    urgency:   'Call emergency services (112) immediately if symptoms appear'
+  },
+  5: { // High Blood Pressure
+    lifestyle: ['Measure BP at home twice daily, morning and evening','Reduce work-related and personal stress','Sleep 7–8 hours per night','Avoid caffeine and alcohol before BP readings'],
+    diet:      ['Strictly follow the DASH diet','Reduce salt to less than 5g/day (check food labels)','Increase magnesium: nuts, seeds, dark chocolate','Eat 3–5 servings of vegetables daily'],
+    medical:   ['If BP consistently >140/90, start medication','Take antihypertensives at the same time daily','Get kidney function test every year','Monitor for headaches, blurred vision, chest pain'],
+    urgency:   'See a physician within 2 weeks if BP >150/90'
+  },
+  6: { // High Cholesterol
+    lifestyle: ['Exercise aerobically 150 minutes per week','Quit smoking — raises bad LDL and lowers good HDL','Maintain BMI below 25','Reduce sedentary time (stand up every hour)'],
+    diet:      ['Eat oats, barley and legumes — high in soluble fibre','Include nuts (almonds, walnuts) daily in small portions','Use olive oil instead of butter or ghee','Avoid fried foods, pastries, and processed meats'],
+    medical:   ['Get a full lipid panel (LDL, HDL, triglycerides) tested','Target LDL below 100 mg/dL if high risk','Discuss statins with your doctor if diet changes fail','Check thyroid function (hypothyroidism raises cholesterol)'],
+    urgency:   'Get a lipid panel test within 2 weeks'
+  },
+  7: { // Obesity
+    lifestyle: ['Set a realistic goal: lose 0.5–1 kg per week','Track calories using a food diary or app','Increase non-exercise activity (take stairs, walk more)','Join a structured weight management programme'],
+    diet:      ['Eat high-protein, high-fibre meals to stay full longer','Avoid liquid calories — juices, sodas, alcohol','Practise mindful eating — eat slowly, no screens while eating','Control portion sizes using smaller plates'],
+    medical:   ['Get thyroid, insulin, and hormonal tests done','Consult a dietitian for a structured meal plan','Check for sleep apnea (common in obesity)','Monitor blood pressure and glucose every 3 months'],
+    urgency:   'Consult a dietitian and physician within 1 month'
+  },
+  8: { // Coronary Heart Disease
+    lifestyle: ['Participate in cardiac rehabilitation if available','Exercise under medical supervision only','Avoid emotional stress and overexertion','Quit smoking completely and permanently'],
+    diet:      ['Strictly avoid saturated and trans fats','Eat omega-3 rich foods: flaxseed, walnuts, fatty fish','Choose whole grains over refined grains','Limit red meat to twice a week maximum'],
+    medical:   ['Take all prescribed medications without skipping','Get a stress test and coronary angiography if advised','Carry nitroglycerin/aspirin as prescribed','Follow up with cardiologist every 3 months'],
+    urgency:   'Seek immediate care if chest pain, shortness of breath, or jaw pain occurs'
+  },
+  9: { // COPD
+    lifestyle: ['Quit smoking immediately — it is the single most impactful step','Avoid air pollution, dust, and chemical fumes','Practice breathing exercises (pursed-lip breathing)','Get annual influenza and pneumococcal vaccinations'],
+    diet:      ['Eat small frequent meals to avoid breathlessness','Increase antioxidants: vitamin C, E (fruits, vegetables)','Stay well hydrated to thin mucus','Avoid bloating foods (beans, carbonated drinks)'],
+    medical:   ['Use prescribed inhalers (bronchodilators/corticosteroids) correctly','Monitor blood oxygen with a pulse oximeter at home','Get pulmonary function test (spirometry) annually','Attend pulmonary rehabilitation programme if available'],
+    urgency:   'Consult a pulmonologist within 2 weeks'
+  }
+};
+
+function openDetail(idx) {
+  const r      = lastResults[idx];
+  const V      = lastVitals;
+  const isHigh = r.classification === 'High Risk';
+  const sc     = isHigh ? '#e74c3c' : '#2ecc71';
+  const bg     = isHigh ? 'rgba(192,57,43,.12)' : 'rgba(39,174,96,.1)';
+  const bd     = isHigh ? '#c0392b' : '#27ae60';
+  const sugg   = DISEASE_SUGGESTIONS[r.disease_id] || DISEASE_SUGGESTIONS[1];
+
+  // Parameter rows for table
+  const refRows = REFS.map(ref => {
+    const v   = V[ref.key];
+    const bad = typeof v==='number' && !isNaN(v) && (v>ref.high||(ref.low>0&&v<ref.low));
+    const disp = (typeof v==='number' && !isNaN(v)) ? v : '—';
+    return `<tr>
+      <td>${ref.label}</td>
+      <td class="${bad?'val-high':'val-ok'}">${disp} ${ref.unit}</td>
+      <td style="color:#555">${ref.range} ${ref.unit}</td>
+      <td>${bad?'<span class="val-high">↑ Elevated</span>':'<span class="val-ok">✓ Normal</span>'}</td>
+    </tr>`;
+  }).join('');
+
+  // Unique chart ID
+  const chartId  = 'radarChart_' + idx;
+  const barChId  = 'barChart_'   + idx;
+
+  document.getElementById('detailBox').innerHTML = `
+
+    <!-- Header -->
+    <div class="modal-header">
+      <div>
+        <div style="font-size:11px;color:#555;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Detailed Analysis Report</div>
+        <div style="font-size:20px;font-weight:700;color:#fff">${r.disease_name}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+
+    <!-- Risk score box -->
+    <div style="background:${bg};border:1px solid ${bd};border-radius:12px;padding:20px;text-align:center;margin-bottom:24px">
+      <div style="font-size:11px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Risk Score</div>
+      <div style="font-size:56px;font-weight:800;color:${sc};line-height:1">${r.risk_score}</div>
+      <div style="font-size:13px;color:${sc};margin-top:2px">%</div>
+      <div style="display:inline-block;background:${isHigh?'rgba(192,57,43,.2)':'rgba(39,174,96,.2)'};color:${sc};font-weight:700;padding:6px 22px;border-radius:20px;margin-top:10px;font-size:15px">${r.classification}</div>
+      ${isHigh?`<div style="margin-top:12px;font-size:12px;color:#e67e22;background:rgba(230,126,34,.1);border:1px solid rgba(230,126,34,.3);border-radius:8px;padding:8px 14px;display:inline-block">⚠ ${sugg.urgency}</div>`:''}
+    </div>
+
+    <!-- ── GRAPH 1: Vitals vs Normal Range (horizontal bar chart) ── -->
+    <div style="font-size:12px;color:#12c2e9;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">📊 Vitals vs Normal Range</div>
+    <div style="background:#0f1117;border-radius:12px;padding:18px;margin-bottom:20px">
+      <canvas id="${barChId}" height="200"></canvas>
+    </div>
+
+    <!-- ── GRAPH 2: Risk Radar across all 9 diseases ── -->
+    <div style="font-size:12px;color:#12c2e9;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:12px">🕸 Risk Profile — All 9 Diseases</div>
+    <div style="background:#0f1117;border-radius:12px;padding:18px;margin-bottom:20px;display:flex;justify-content:center">
+      <canvas id="${chartId}" width="340" height="340"></canvas>
+    </div>
+
+    <!-- ── Parameter Analysis Table ── -->
+    <div style="font-size:12px;color:#12c2e9;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px">🔬 Parameter Analysis</div>
+    <table class="ref-table" style="margin-bottom:24px">
+      <thead><tr><th>Parameter</th><th>Your Value</th><th>Normal Range</th><th>Status</th></tr></thead>
+      <tbody>${refRows}</tbody>
+    </table>
+
+    <!-- ── Suggestions ── -->
+    <div style="font-size:12px;color:#12c2e9;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px">💡 Personalised Suggestions</div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px">
+
+      <div style="background:#0f1117;border:1px solid #1e2a1e;border-radius:10px;padding:16px">
+        <div style="font-size:11px;font-weight:700;color:#2ecc71;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏃 Lifestyle Changes</div>
+        ${sugg.lifestyle.map(s=>`<div style="font-size:12px;color:#b0c0b0;padding:5px 0;border-bottom:1px solid #1a2a1a;line-height:1.5">• ${s}</div>`).join('')}
+      </div>
+
+      <div style="background:#0f1117;border:1px solid #2a1e1e;border-radius:10px;padding:16px">
+        <div style="font-size:11px;font-weight:700;color:#f39c12;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🥗 Diet Recommendations</div>
+        ${sugg.diet.map(s=>`<div style="font-size:12px;color:#c0b8a0;padding:5px 0;border-bottom:1px solid #2a2010;line-height:1.5">• ${s}</div>`).join('')}
+      </div>
+
+    </div>
+
+    <div style="background:#0f1117;border:1px solid #1a1e2a;border-radius:10px;padding:16px;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:#12c2e9;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">🏥 Medical Actions</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+        ${sugg.medical.map(s=>`<div style="font-size:12px;color:#a0b0c0;padding:5px 0;line-height:1.5">• ${s}</div>`).join('')}
+      </div>
+    </div>
+
+    <div style="font-size:11px;color:#333;text-align:right;margin-top:8px">
+      Model: Random Forest Classifier &nbsp;|&nbsp; CD-RPS v1.0 &nbsp;|&nbsp; IGNOU BCA — Prosun Kumar Das
+    </div>
+  `;
+
+  document.getElementById('detailModal').classList.add('open');
+
+  // ── Draw charts after DOM is ready ──────────────────────────
+  setTimeout(() => {
+    drawBarChart(barChId, V);
+    drawRadarChart(chartId, lastResults, r.disease_id);
+  }, 80);
+}
+
+// ── Bar chart: your vitals vs normal max ────────────────────
+function drawBarChart(canvasId, V) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx || !window.Chart) return;
+
+  const params = [
+    {label:'BMI',        val:V.bmi,         max:40,  normal:24.9, unit:'kg/m²'},
+    {label:'Glucose',    val:V.glucose,      max:300, normal:100,  unit:'mg/dL'},
+    {label:'Systolic BP',val:V.systolic_bp,  max:200, normal:120,  unit:'mmHg'},
+    {label:'Cholesterol',val:V.cholesterol,  max:350, normal:200,  unit:'mg/dL'},
+    {label:'Insulin',    val:V.insulin,      max:150, normal:25,   unit:'µU/mL'},
+    {label:'Diastolic BP',val:V.diastolic_bp,max:130, normal:80,   unit:'mmHg'},
+  ];
+
+  const colors = params.map(p =>
+    p.val > p.normal ? 'rgba(231,76,60,0.75)' : 'rgba(46,204,113,0.75)'
+  );
+  const normalLine = params.map(p => p.normal);
+
+  new window.Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: params.map(p => p.label),
+      datasets: [
+        {
+          label: 'Your Value',
+          data:  params.map(p => p.val),
+          backgroundColor: colors,
+          borderColor:     colors.map(c => c.replace('0.75','1')),
+          borderWidth: 1, borderRadius: 5,
+        },
+        {
+          label: 'Normal Max',
+          data:  normalLine,
+          type:  'line',
+          borderColor:     'rgba(255,255,255,0.25)',
+          borderDash:      [5,4],
+          borderWidth:     1.5,
+          pointRadius:     3,
+          pointBackgroundColor: 'rgba(255,255,255,0.4)',
+          fill: false,
+          tension: 0,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels: { color:'#a0a0b0', font:{size:11} } },
+        tooltip: {
+          callbacks: {
+            label: ctx => {
+              const p = params[ctx.dataIndex];
+              return ctx.dataset.label === 'Your Value'
+                ? ` ${ctx.parsed.y} ${p.unit} (normal ≤ ${p.normal})`
+                : ` Normal max: ${ctx.parsed.y} ${p.unit}`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks:{color:'#a0a0b0',font:{size:11}}, grid:{color:'#1e2130'} },
+        y: { ticks:{color:'#a0a0b0',font:{size:11}}, grid:{color:'#1e2130'}, beginAtZero:true }
+      }
+    }
+  });
+}
+
+// ── Radar chart: risk across all 9 diseases ──────────────────
+function drawRadarChart(canvasId, results, activeDiseaseId) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx || !window.Chart) return;
+
+  // Sort by disease_id for consistent layout
+  const sorted = [...results].sort((a,b) => a.disease_id - b.disease_id);
+  const labels = sorted.map(r => r.disease_name.replace(' (Hypertension)','').replace('High Blood Pressure','HBP'));
+  const scores = sorted.map(r => r.risk_score);
+  const pointColors = sorted.map(r =>
+    r.disease_id === activeDiseaseId ? '#f39c12' :
+    r.classification === 'High Risk' ? '#e74c3c' : '#2ecc71'
+  );
+
+  new window.Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Risk Score (%)',
+        data:  scores,
+        backgroundColor: 'rgba(18,194,233,0.10)',
+        borderColor:     'rgba(18,194,233,0.6)',
+        borderWidth: 2,
+        pointBackgroundColor: pointColors,
+        pointRadius:     5,
+        pointHoverRadius:7,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { labels:{ color:'#a0a0b0', font:{size:11} } },
+        tooltip: { callbacks:{ label: ctx => ` Risk: ${ctx.parsed.r}%` } }
+      },
+      scales: {
+        r: {
+          min:0, max:100,
+          ticks:    { color:'#555', font:{size:9}, stepSize:25, backdropColor:'transparent' },
+          grid:     { color:'#2a2d3e' },
+          pointLabels:{ color:'#a0a0b0', font:{size:10} },
+          angleLines:{ color:'#2a2d3e' }
+        }
+      }
+    }
+  });
+}
+
+function bgClose(e) { if(e.target.id==='detailModal') closeModal(); }
+function closeModal() { document.getElementById('detailModal').classList.remove('open'); }
+
+async function loadHistory() {
+  const el = document.getElementById('historyContent');
+  el.innerHTML = '<div style="color:#555;padding:16px">Loading...</div>';
+  try {
+    const res  = await fetch(`${API}/api/history/${patient.patient_id}`);
+    const data = await res.json();
+    if (!data.history||!data.history.length) {
+      el.innerHTML='<div style="color:#555;text-align:center;padding:32px">No prediction history yet.</div>'; return;
+    }
+    // Group by date+time prefix (minute-level = same session)
+    const sessions = {};
+    data.history.forEach(h => {
+      const k = h.PredictionDate.substring(0,16);
+      if(!sessions[k]) sessions[k]=[];
+      sessions[k].push(h);
+    });
+    el.innerHTML = Object.entries(sessions).map(([date, items], si) => {
+      const hc = items.filter(i=>i.Classification==='High Risk').length;
+      const rows = items.map(h => {
+        const isH = h.Classification==='High Risk';
+        const safeH = JSON.stringify(h).replace(/'/g,"\\'");
+        return `<div class="hist-item">
+          <span style="color:#c0c0d0;font-weight:500">${h.DiseaseName}</span>
+          <span style="display:flex;align-items:center;gap:10px">
+            <span class="${isH?'val-high':'val-ok'}" style="font-size:14px;font-weight:700">${h.RiskScore}%</span>
+            <span class="${isH?'val-high':'val-ok'}" style="font-size:12px">${h.Classification}</span>
+            <button class="btn-detail" onclick='openHistDetail(${JSON.stringify(h)})'>Detail</button>
+          </span>
+        </div>`;
+      }).join('');
+      return `<div class="hist-session">
+        <div class="hist-hdr" onclick="toggleSess('s${si}','a${si}')">
+          <div>
+            <div style="font-weight:600;color:#fff;font-size:14px">${date}</div>
+            <div style="font-size:12px;color:#555;margin-top:3px">
+              ${items.length} diseases &nbsp;|&nbsp;
+              <span class="val-high">${hc} High Risk</span> &nbsp;|&nbsp;
+              <span class="val-ok">${items.length-hc} Low Risk</span>
+            </div>
+          </div>
+          <span id="a${si}" style="color:#555;font-size:20px">&#8964;</span>
+        </div>
+        <div class="hist-body" id="s${si}">${rows}</div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    el.innerHTML='<div style="color:#e74c3c;padding:12px">Failed to load history.</div>';
+  }
+}
+
+function toggleSess(bodyId, arrowId) {
+  const b = document.getElementById(bodyId);
+  const a = document.getElementById(arrowId);
+  b.classList.toggle('open');
+  a.innerHTML = b.classList.contains('open') ? '&#8963;' : '&#8964;';
+}
+
+function openHistDetail(h) {
+  const isHigh = h.Classification==='High Risk';
+  const sc = isHigh?'#e74c3c':'#2ecc71';
+  const bg = isHigh?'rgba(192,57,43,.12)':'rgba(39,174,96,.1)';
+  const bd = isHigh?'#c0392b':'#27ae60';
+  document.getElementById('detailBox').innerHTML = `
+    <div class="modal-header">
+      <div>
+        <div style="font-size:12px;color:#555;margin-bottom:4px">${h.PredictionDate}</div>
+        <div style="font-size:20px;font-weight:700;color:#fff">${h.DiseaseName}</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">&#10005;</button>
+    </div>
+    <div style="background:${bg};border:1px solid ${bd};border-radius:12px;padding:22px;text-align:center;margin-bottom:20px">
+      <div style="font-size:50px;font-weight:800;color:${sc};line-height:1">${h.RiskScore}</div>
+      <div style="font-size:13px;color:${sc};margin-top:2px">% Risk Score</div>
+      <div style="display:inline-block;background:${isHigh?'rgba(192,57,43,.2)':'rgba(39,174,96,.2)'};color:${sc};font-weight:700;padding:6px 20px;border-radius:20px;margin-top:10px">${h.Classification}</div>
+    </div>
+    <table class="ref-table" style="margin-bottom:20px">
+      <thead><tr><th>Parameter</th><th>Recorded Value</th></tr></thead>
+      <tbody>
+        ${[['BMI', h.BMI+' kg/m²'],['Glucose', h.GlucoseLevel+' mg/dL'],
+           ['Systolic BP', h.SystolicBP+' mmHg'],
+           ['Cholesterol', (h.Cholesterol||'—')+(h.Cholesterol?' mg/dL':'')],
+           ['ML Model', h.MLModelUsed]
+          ].map(([k,v])=>`<tr><td style="color:#a0a0b0">${k}</td><td style="color:#e0e0e0;font-weight:500">${v}</td></tr>`).join('')}
+      </tbody>
+    </table>
+    ${h.Recommendations?`
+      <div style="font-size:12px;color:#555;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px">Recommendations</div>
+      <div class="rec-box">• ${h.Recommendations.split('. ').filter(Boolean).join('<br>• ')}</div>`:''}`;
+  document.getElementById('detailModal').classList.add('open');
+}
+
+function logout() { sessionStorage.removeItem('patient'); window.location.href='/'; }
+</script>
+</body>
+</html>
