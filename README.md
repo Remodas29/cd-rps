@@ -1,189 +1,297 @@
 # Chronic Disease Risk Prediction System (CD-RPS)
 
-**IGNOU BCA Final Year Project**
-**Student:** Prosun Kumar Das
-**Enrolment:** 2300990309
-**Study Centre:** 1314
-**Programme:** BCA
-**Guide:** Mr. Nirupam Singh
-**School:** School of Computer and Information Sciences, IGNOU, New Delhi
-
----
+An AI-powered full-stack healthcare web application that predicts the risk of multiple chronic diseases using Machine Learning models trained on clinical health parameters.
 
 ## Project Overview
 
-The Chronic Disease Risk Prediction System (CD-RPS) is an AI-powered web application that predicts a patient's risk of developing 9 chronic diseases from a single set of clinical vitals. It uses trained Random Forest machine learning models, a SQLite database, a Flask REST API backend, and a responsive HTML/CSS/JS frontend.
+The Chronic Disease Risk Prediction System (CD-RPS) is designed to assist in early identification of chronic disease risks through predictive analytics and machine learning. The system accepts patient vital parameters and simultaneously predicts the risk levels for nine chronic diseases.
+
+The project was developed as part of the IGNOU BCA Final Year Project (BCSP-064).
 
 ---
 
-## Diseases Covered
+# Features
 
-| # | Disease |
-|---|---|
-| 1 | Type 2 Diabetes |
-| 2 | Cardiovascular Disease |
-| 3 | Chronic Kidney Disease |
-| 4 | Stroke |
-| 5 | High Blood Pressure (Hypertension) |
-| 6 | High Cholesterol |
-| 7 | Obesity |
-| 8 | Coronary Heart Disease |
-| 9 | COPD (Chronic Obstructive Pulmonary Disease) |
-
----
-
-## Technology Stack
-
-| Component | Technology |
-|---|---|
-| Programming Language | Python 3.x |
-| Machine Learning | scikit-learn (Random Forest Classifier) |
-| Data Processing | Pandas, NumPy |
-| Web Framework | Flask |
-| Database | SQLite (via DB Browser for SQLite) |
-| Frontend | HTML5, CSS3, JavaScript, Bootstrap 5, Chart.js |
-| Testing | Python unittest |
+* Predicts risk for 9 chronic diseases simultaneously
+* Machine Learning powered prediction engine
+* Flask REST API backend
+* SQLite relational database integration
+* Interactive frontend dashboard
+* Patient registration and login system
+* Historical prediction tracking
+* Chart.js visual analytics
+* Personalized health recommendations
+* Responsive Bootstrap-based UI
 
 ---
 
-## Project Structure
+# Diseases Covered
 
-```
-cd_rps/
-├── database/
-│   ├── cd_rps.db              — SQLite database file
-│   ├── db_connection.py       — Database connection and CRUD helpers
-│   └── schema_sqlite.sql      — SQL schema (reference)
-│
-├── model/
-│   ├── train_all_models.py    — Trains all 9 disease models
-│   ├── model_1.pkl            — Type 2 Diabetes model
-│   ├── model_2.pkl            — Cardiovascular Disease model
-│   ├── model_3.pkl            — Chronic Kidney Disease model
-│   ├── model_4.pkl            — Stroke model
-│   ├── model_5.pkl            — High Blood Pressure model
-│   ├── model_6.pkl            — High Cholesterol model
-│   ├── model_7.pkl            — Obesity model
-│   ├── model_8.pkl            — Coronary Heart Disease model
-│   ├── model_9.pkl            — COPD model
-│   ├── scaler_1.pkl           — Scaler for model 1
-│   └── scaler_2.pkl ... 9     — Scalers for models 2–9
+1. Type 2 Diabetes
+2. Cardiovascular Disease
+3. Chronic Kidney Disease
+4. Stroke
+5. Hypertension
+6. High Cholesterol
+7. Obesity
+8. Coronary Heart Disease
+9. COPD
+
+---
+
+# Tech Stack
+
+## Backend
+
+* Python
+* Flask
+* Flask-CORS
+
+## Machine Learning
+
+* scikit-learn
+* Random Forest Classifier
+* NumPy
+* Pandas
+
+## Frontend
+
+* HTML5
+* CSS3
+* JavaScript
+* Bootstrap 5
+* Chart.js
+
+## Database
+
+* SQLite
+
+---
+
+# Project Structure
+
+```text
+cd-rps/
 │
 ├── backend/
-│   └── app.py                 — Flask REST API (6 routes)
+│   └── app.py
+│
+├── database/
+│   ├── cd_rps.db
+│   ├── db_connection.py
+│   └── schema_sqlite.sql
 │
 ├── frontend/
-│   ├── index.html             — Login and Registration page
-│   └── predict.html           — Vitals form, Results, History
+│   ├── index.html
+│   └── predict.html
+│
+├── model/
+│   ├── train_all_models.py
+│   ├── model_1.pkl
+│   ├── scaler_1.pkl
+│   └── ...
 │
 ├── tests/
-│   └── test_cd_rps.py         — 45 unit and integration tests
+│   └── test_cd_rps.py
 │
-├── requirements.txt           — Python dependencies
-├── run.bat                    — One-click launcher (Windows)
-└── README.md                  — This file
+├── requirements.txt
+├── README.md
+└── run.bat
 ```
 
 ---
 
-## Quick Start (Windows)
+# Installation Guide
 
-### Method 1 — Double-click launcher (easiest)
+## Step 1 — Clone Repository
 
-1. Make sure Python is installed (https://www.python.org/downloads/)
-2. Double-click **`run.bat`** in the `cd_rps` folder
-3. The browser opens automatically at `http://127.0.0.1:5000`
+```bash
+git clone https://github.com/Remodas29/cd-rps.git
+```
 
-### Method 2 — Manual (VS Code terminal)
+## Step 2 — Open Project Folder
 
-**Step 1 — Install dependencies:**
+```bash
+cd cd-rps
+```
+
+## Step 3 — Create Virtual Environment
+
+```bash
+python -m venv venv
+```
+
+## Step 4 — Activate Virtual Environment
+
+### Windows
+
+```bash
+venv\Scripts\activate
+```
+
+---
+
+# Install Dependencies
+
 ```bash
 pip install -r requirements.txt
 ```
 
-**Step 2 — Train all 9 AI models (run once):**
+---
+
+# Run Machine Learning Training
+
 ```bash
-cd model
-python train_all_models.py
-cd ..
+python model/train_all_models.py
 ```
 
-**Step 3 — Start the Flask server:**
+This generates:
+
+* model_1.pkl → model_9.pkl
+* scaler_1.pkl → scaler_9.pkl
+
+---
+
+# Run Flask Application
+
 ```bash
-cd backend
-python app.py
+python backend/app.py
 ```
 
-**Step 4 — Open in browser:**
-```
+---
+
+# Open Application
+
+Open browser:
+
+```text
 http://127.0.0.1:5000
 ```
 
 ---
 
-## Running the Tests
+# Database Setup
 
-```bash
-cd "project Final\cd_rps"
-python tests/test_cd_rps.py
+Open:
+
+```text
+database/schema_sqlite.sql
 ```
 
-Expected output: **45 tests, 0 failures, 0 errors**
+Execute the SQL using:
+
+* DB Browser for SQLite
+
+IMPORTANT FIX:
+
+Replace:
+
+```sql
+RecordID INTEGER NOT NULL UNIQUE
+```
+
+with:
+
+```sql
+RecordID INTEGER NOT NULL
+```
 
 ---
 
-## API Endpoints
+# Machine Learning Architecture
 
-| Method | Endpoint | Description |
-|---|---|---|
-| GET | `/health` | Server status and model count |
-| POST | `/api/register` | Register a new patient account |
-| POST | `/api/login` | Login and get patient session |
-| POST | `/api/predict_all` | Submit vitals, get all 9 disease predictions |
-| GET | `/api/history/<id>` | Get full prediction history for a patient |
-| GET | `/api/diseases` | List all 9 diseases |
+The system uses:
 
----
+* Random Forest Classifier
+* StandardScaler normalization
+* Multi-model prediction architecture
+* Probability-based classification
 
-## Database Tables
+Each disease model:
 
-| Table | Purpose |
-|---|---|
-| PATIENT | Stores patient registration details |
-| VITALS_RECORD | Stores clinical parameters submitted per session |
-| DISEASE | Reference table for all 9 chronic diseases |
-| PREDICTION_RESULT | Stores AI model output for each prediction |
+* Accepts 8 clinical features
+* Returns probability score
+* Produces High Risk / Low Risk classification
 
 ---
 
-## Input Parameters
+# Input Parameters
 
-| Parameter | Unit | Normal Range |
-|---|---|---|
-| Age | years | — |
-| BMI | kg/m² | 18.5 – 24.9 |
-| Glucose Level | mg/dL | 70 – 100 (fasting) |
-| Systolic Blood Pressure | mmHg | Below 120 |
-| Diastolic Blood Pressure | mmHg | Below 80 |
-| Cholesterol | mg/dL | Below 200 |
-| Insulin Level | µU/mL | 2 – 25 (fasting) |
-| Skin Thickness | mm | Triceps skinfold |
-| Pregnancies | count | 0 (enter 0 if male) |
-| Diabetes Pedigree Function | 0–2.5 | Family history score |
+The system accepts:
 
----
-
-## References
-
-- Pima Indians Diabetes Dataset — Jason Brownlee / UCI ML Repository
-- Framingham Heart Study Dataset — Kaggle
-- Python Documentation — https://docs.python.org
-- Flask Documentation — https://flask.palletsprojects.com
-- scikit-learn Documentation — https://scikit-learn.org
-- Bootstrap 5 — https://getbootstrap.com
-- Chart.js — https://www.chartjs.org
-- Stack Overflow, GeeksforGeeks, GitHub
+* Age
+* BMI
+* Glucose Level
+* Blood Pressure
+* Cholesterol
+* Insulin Level
+* Skin Thickness
+* Pregnancies
+* Diabetes Pedigree Function
 
 ---
 
-*IGNOU BCA Final Project | School of Computer and Information Sciences | 2300990309*
+# Testing
+
+The project includes:
+
+* Unit Testing
+* Integration Testing
+* System Testing
+
+Implemented using:
+
+```text
+Python unittest
+```
+
+---
+
+# Screenshots
+
+## Login Page
+
+(Add screenshot here)
+
+## Prediction Dashboard
+
+(Add screenshot here)
+
+## Risk Analysis Charts
+
+(Add screenshot here)
+
+---
+
+# Future Improvements
+
+* JWT Authentication
+* Cloud Deployment
+* Docker Support
+* PostgreSQL Migration
+* Real-time API Integration
+* Advanced ML Models
+* Mobile Application
+* Doctor/Admin Dashboard
+
+---
+
+# Author
+
+## Prosun Kumar Das
+
+
+GitHub:
+https://github.com/Remodas29
+
+---
+
+# License
+
+This project is developed for educational and academic purposes.
+
+---
+
+# Disclaimer
+
+This project is intended for educational and research purposes only. It should not be considered a substitute for professional medical diagnosis or treatment.
