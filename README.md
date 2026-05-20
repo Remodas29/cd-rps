@@ -1,3 +1,9 @@
+![Python](https://img.shields.io/badge/Python-3.11-blue)
+![Flask](https://img.shields.io/badge/Flask-Web_App-green)
+![JavaScript](https://img.shields.io/badge/JavaScript-Frontend-yellow)
+![SQLite](https://img.shields.io/badge/Database-SQLite-lightgrey)
+![Machine Learning](https://img.shields.io/badge/ML-Random_Forest-orange)
+
 # Chronic Disease Risk Prediction System (CD-RPS)
 
 An AI-powered full-stack healthcare web application that predicts the risk of multiple chronic diseases using Machine Learning models trained on clinical health parameters.
