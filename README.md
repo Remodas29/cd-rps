@@ -270,7 +270,7 @@ Figure UI Wireframe — screenshot of the Detail Modal with Charts
 <img width="428" height="440" alt="image" src="https://github.com/user-attachments/assets/8571af00-88c4-4961-a6b1-80ca26cd5097" /> <img width="490" height="441" alt="image" src="https://github.com/user-attachments/assets/058aac90-57ee-4f54-baeb-a2f9f81bd052" />
 
 <img width="922" height="902" alt="image" src="https://github.com/user-attachments/assets/1036e8bf-602a-4f3f-8493-df32f5b9c82d" />
-Prediction History Panel — Showing sessions grouped by date with High Risk/Low Risk counts, with one session expanded to show all 9 disease results<img width="971" height="528" alt="image" src="https://github.com/user-attachments/assets/c51f6c7a-5f92-4d0c-b080-0a4d643bbafb" />
+ Prediction History Panel — Showing sessions grouped by date with High Risk/Low Risk counts, with one session expanded to show all 9 disease results<img width="971" height="528" alt="image" src="https://github.com/user-attachments/assets/c51f6c7a-5f92-4d0c-b080-0a4d643bbafb" />
 
 
 
