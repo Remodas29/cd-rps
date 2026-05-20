@@ -8,6 +8,11 @@ The Chronic Disease Risk Prediction System (CD-RPS) is designed to assist in ear
 
 The project was developed as part of the IGNOU BCA Final Year Project (BCSP-064).
 
+# Live Demo
+
+🚀 Live Application:
+
+https://cd-rps.onrender.com
 ---
 
 # Features
