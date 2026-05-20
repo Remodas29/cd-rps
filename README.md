@@ -251,15 +251,28 @@ Python unittest
 
 ## Login Page
 
-(Add screenshot here)
+<img width="962" height="607" alt="image" src="https://github.com/user-attachments/assets/2c3f5df3-4ca5-40f1-bc28-3b3f3eb33e04" />
+<img width="935" height="553" alt="image" src="https://github.com/user-attachments/assets/93a5ea8c-99cb-4cbb-bfc7-7b9301121d1b" />
+
+
 
 ## Prediction Dashboard
 
-(Add screenshot here)
+<img width="956" height="559" alt="image" src="https://github.com/user-attachments/assets/2d0f455a-7cd7-444e-bf53-652777037b51" />
+<img width="959" height="566" alt="image" src="https://github.com/user-attachments/assets/6ce7a0cf-fb88-4184-9e1e-ae1960fa710f" />
+
 
 ## Risk Analysis Charts
 
-(Add screenshot here)
+   
+Figure UI Wireframe — screenshot of the Detail Modal with Charts
+<img width="978" height="569" alt="image" src="https://github.com/user-attachments/assets/631f7b2e-853d-40b4-91e6-97adea963f7e" />
+<img width="428" height="440" alt="image" src="https://github.com/user-attachments/assets/8571af00-88c4-4961-a6b1-80ca26cd5097" /> <img width="490" height="441" alt="image" src="https://github.com/user-attachments/assets/058aac90-57ee-4f54-baeb-a2f9f81bd052" />
+
+<img width="922" height="902" alt="image" src="https://github.com/user-attachments/assets/1036e8bf-602a-4f3f-8493-df32f5b9c82d" />
+Prediction History Panel — Showing sessions grouped by date with High Risk/Low Risk counts, with one session expanded to show all 9 disease results<img width="971" height="528" alt="image" src="https://github.com/user-attachments/assets/c51f6c7a-5f92-4d0c-b080-0a4d643bbafb" />
+
+
 
 ---
 
