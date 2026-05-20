@@ -187,12 +187,8 @@ def history(patient_id):
 def diseases():
     return jsonify({'success':True,'diseases':get_all_diseases()})
 
-# ── Run ───────────────────────────────────────────────────────
+# ── Run Application ─────────────────────────────
+
 if __name__ == '__main__':
-    print("\n" + "="*55)
-    print("  CD-RPS Flask Backend + Frontend")
-    print("  Open: http://127.0.0.1:5000")
-    print("="*55 + "\n")
-   if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
