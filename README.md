@@ -12,7 +12,7 @@ An AI-powered full-stack healthcare web application that predicts the risk of mu
 
 The Chronic Disease Risk Prediction System (CD-RPS) is designed to assist in early identification of chronic disease risks through predictive analytics and machine learning. The system accepts patient vital parameters and simultaneously predicts the risk levels for nine chronic diseases.
 
-The project was developed as part of the IGNOU BCA Final Year Project (BCSP-064).
+The project was developed as part of the IGNOU BCA Final Year Project (BCSP-064). https://heyzine.com/flip-book/360c305133.html#page/1
 
 # Live Demo
 
